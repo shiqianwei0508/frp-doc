@@ -1,21 +1,20 @@
 ---
-title: "范围端口映射"
-weight: 8
+title: "端口范围映射"
+weight: 80
 ---
 
-在 frpc 的配置文件中可以指定映射多个端口，目前只支持 TCP 和 UDP 的代理类型。
+*Added in v0.56.0*
 
-这一功能通过 `range:` 段落标记来实现，客户端会解析这个标记中的配置，将其拆分成多个 proxy，每一个 proxy 以数字为后缀命名。
+我们可以利用 Go template 的 range 语法结合内置的 `parseNumberRangePair` 函数来实现端口范围映射。
 
-例如要映射本地 6000-6005, 6007 这7个端口，主要配置如下：
+下面的示例，应用运行后会创建 8 个代理，名称为 `test-6000, test-6001 ... test-6007`，分别将远端的端口映射到本地。
 
-```ini
-# frpc.ini
-[range:test_tcp]
-type = tcp
-local_ip = 127.0.0.1
-local_port = 6000-6005,6007
-remote_port = 6000-6005,6007
 ```
-
-实际连接成功后会创建 7 个 proxy，命名为 `test_tcp_0, test_tcp_1 ... test_tcp_6`。
+{{- range $_, $v := parseNumberRangePair "6000-6006,6007" "6000-6006,6007" }}
+[[proxies]]
+name = "tcp-{{ $v.First }}"
+type = "tcp"
+localPort = {{ $v.First }}
+remotePort = {{ $v.Second }}
+{{- end }}
+```

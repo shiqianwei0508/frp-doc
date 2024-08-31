@@ -1,11 +1,13 @@
 ---
 title: "获取用户真实 IP"
-weight: 7
+weight: 70
 ---
 
 ## HTTP X-Forwarded-For
 
-目前只有 `HTTP` 类型的代理支持这一功能，可以通过用户请求的 header 中的 `X-Forwarded-For` 来获取用户真实 IP，默认启用。
+目前只有 `http` 类型的代理或者启用了 `https2http` 或 `https2https` 插件的代理支持这一功能。
+
+可以通过 HTTP/HTTPS 请求 header 中的 `X-Forwarded-For` 来获取用户真实 IP，默认启用。
 
 ## Proxy Protocol
 
@@ -17,17 +19,18 @@ frp 支持通过 `Proxy Protocol` 协议来传递经过 frp 代理的请求的�
 
 这里以 `HTTPS` 类型为例:
 
-```ini
-# frpc.ini
-[web]
-type = https
-local_port = 443
-custom_domains = test.yourdomain.com
+```toml
+# frpc.toml
+[[proxies]]
+name = "web"
+type = "https"
+localPort = 443
+customDomains = ["test.yourdomain.com"]
 
 # 目前支持 v1 和 v2 两个版本的 proxy protocol 协议。
-proxy_protocol_version = v2
+transport.proxyProtocolVersion = "v2"
 ```
 
-只需要在代理配置中增加一行 `proxy_protocol_version = v2` 即可开启此功能。
+只需要在代理配置中增加一行 `transport.proxyProtocolVersion = "v2"` 即可开启此功能。
 
 本地的 HTTPS 服务可以通过在 nginx 的配置中启用 `Proxy Protocol` 的解析并将结果设置在 `X-Real-IP` 这个 Header 中就可以在自己的 Web 服务中通过 `X-Real-IP` 获取到用户的真实 IP。
